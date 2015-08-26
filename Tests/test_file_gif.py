@@ -1,6 +1,7 @@
 from helper import unittest, PillowTestCase, hopper, netpbm_available
 
 from PIL import Image
+from PIL import ImageSequence
 from PIL import GifImagePlugin
 
 codecs = dir(Image.core)
@@ -95,6 +96,16 @@ class TestFileGif(PillowTestCase):
         reread = Image.open(out)
 
         self.assertEqual(reread.n_frames, 5)
+
+        # Validate that frames look similar
+        for orig_frame, new_frame in zip(
+                ImageSequence.Iterator(im), ImageSequence.Iterator(reread)
+        ):
+            self.assert_image_similar(
+                new_frame.convert('RGB'),
+                orig_frame.convert('RGB'),
+                50
+            )
 
     def test_headers_saving_for_animated_gifs(self):
         important_headers = ['background', 'version', 'duration', 'loop']
